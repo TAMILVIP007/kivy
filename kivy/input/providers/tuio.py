@@ -93,14 +93,14 @@ class TuioMotionEventProvider(MotionEventProvider):
         if len(args) == 0:
             Logger.error('Tuio: Invalid configuration for TUIO provider')
             Logger.error('Tuio: Format must be ip:port (eg. 127.0.0.1:3333)')
-            err = 'Tuio: Current configuration is <%s>' % (str(','.join(args)))
+            err = f"Tuio: Current configuration is <{','.join(args)}>"
             Logger.error(err)
             return
         ipport = args[0].split(':')
         if len(ipport) != 2:
             Logger.error('Tuio: Invalid configuration for TUIO provider')
             Logger.error('Tuio: Format must be ip:port (eg. 127.0.0.1:3333)')
-            err = 'Tuio: Current configuration is <%s>' % (str(','.join(args)))
+            err = f"Tuio: Current configuration is <{','.join(args)}>"
             Logger.error(err)
             return
         self.ip, self.port = args[0].split(':')
@@ -125,7 +125,7 @@ class TuioMotionEventProvider(MotionEventProvider):
     def create(oscpath, **kwargs):
         '''Create a touch event from a TUIO path'''
         if oscpath not in TuioMotionEventProvider.__handlers__:
-            raise Exception('Unknown %s touch path' % oscpath)
+            raise Exception(f'Unknown {oscpath} touch path')
         return TuioMotionEventProvider.__handlers__[oscpath](**kwargs)
 
     def start(self):
@@ -248,15 +248,14 @@ class Tuio2dCurMotionEvent(TuioMotionEvent):
 
     def depack(self, args):
         if len(args) < 5:
-            self.sx, self.sy = list(map(float, args[0:2]))
+            self.sx, self.sy = list(map(float, args[:2]))
             self.profile = ('pos', )
         elif len(args) == 5:
-            self.sx, self.sy, self.X, self.Y, self.m = list(map(float,
-                                                                args[0:5]))
+            self.sx, self.sy, self.X, self.Y, self.m = list(map(float, args[:5]))
             self.Y = -self.Y
             self.profile = ('pos', 'mov', 'motacc')
         else:
-            self.sx, self.sy, self.X, self.Y = list(map(float, args[0:4]))
+            self.sx, self.sy, self.X, self.Y = list(map(float, args[:4]))
             self.m, width, height = list(map(float, args[4:7]))
             self.Y = -self.Y
             self.profile = ('pos', 'mov', 'motacc', 'shape')
@@ -274,7 +273,7 @@ class Tuio2dObjMotionEvent(TuioMotionEvent):
 
     def depack(self, args):
         if len(args) < 5:
-            self.sx, self.sy = args[0:2]
+            self.sx, self.sy = args[:2]
             self.profile = ('pos', )
         elif len(args) == 9:
             self.fid, self.sx, self.sy, self.a, self.X, self.Y = args[:6]

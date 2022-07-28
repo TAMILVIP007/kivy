@@ -162,8 +162,7 @@ def update_intermediates(base, keys, bound, s, fn, args, instance, value):
     # for the last attr we bind directly to the setting function,
     # because that attr sets the value of the rule.
     if isinstance(f, (EventDispatcher, Observable)):
-        uid = f.fbind(keys[-1], fn, args)
-        if uid:
+        if uid := f.fbind(keys[-1], fn, args):
             append([f.proxy_ref, keys[-1], fn, uid])
     # when we rebind we have to update the
     # rule with the most recent value, otherwise, the value might be wrong
@@ -229,8 +228,7 @@ def create_handler(iself, element, key, value, rule, idmap, delayed=False):
             # for the last attr we bind directly to the setting
             # function, because that attr sets the value of the rule.
             if isinstance(f, (EventDispatcher, Observable)):
-                uid = f.fbind(keys[-1], fn, args)  # f is not None
-                if uid:
+                if uid := f.fbind(keys[-1], fn, args):
                     append([f.proxy_ref, keys[-1], fn, uid])
                     was_bound = True
             if was_bound:
@@ -240,9 +238,9 @@ def create_handler(iself, element, key, value, rule, idmap, delayed=False):
         return eval(value, idmap), bound_list
     except Exception as e:
         tb = sys.exc_info()[2]
-        raise BuilderException(rule.ctx, rule.line,
-                               '{}: {}'.format(e.__class__.__name__, e),
-                               cause=tb)
+        raise BuilderException(
+            rule.ctx, rule.line, f'{e.__class__.__name__}: {e}', cause=tb
+        )
 
 
 class BuilderBase(object):
@@ -319,10 +317,7 @@ class BuilderBase(object):
         filename = resource_find(filename) or filename
         self.rules = [x for x in self.rules if x[1].ctx.filename != filename]
         self._clear_matchcache()
-        templates = {}
-        for x, y in self.templates.items():
-            if y[2] != filename:
-                templates[x] = y
+        templates = {x: y for x, y in self.templates.items() if y[2] != filename}
         self.templates = templates
 
         if filename in self.files:
@@ -364,8 +359,9 @@ class BuilderBase(object):
         # put a warning if a file is loaded multiple times
         if fn in self.files:
             Logger.warning(
-                'Lang: The file {} is loaded multiples times, '
-                'you might have unwanted behaviors.'.format(fn))
+                f'Lang: The file {fn} is loaded multiples times, you might have unwanted behaviors.'
+            )
+
 
         try:
             # parse the string
@@ -428,14 +424,12 @@ class BuilderBase(object):
         # ctx as key.
         name = args[0]
         if name not in self.templates:
-            raise Exception('Unknown <%s> template name' % name)
+            raise Exception(f'Unknown <{name}> template name')
         baseclasses, rule, fn = self.templates[name]
-        key = '%s|%s' % (name, baseclasses)
+        key = f'{name}|{baseclasses}'
         cls = Cache.get('kv.lang', key)
         if cls is None:
-            rootwidgets = []
-            for basecls in baseclasses.split('+'):
-                rootwidgets.append(Factory.get(basecls))
+            rootwidgets = [Factory.get(basecls) for basecls in baseclasses.split('+')]
             cls = type(name, tuple(rootwidgets), {})
             Cache.append('kv.lang', key, cls)
         widget = cls()

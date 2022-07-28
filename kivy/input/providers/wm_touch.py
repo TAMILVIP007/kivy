@@ -127,11 +127,13 @@ else:
             if msg >= WM_MOUSEMOVE and msg <= WM_MOUSELAST:
                 done = self._mouse_handler(msg, wParam, lParam)
 
-            if not done:
-                return windll.user32.CallWindowProcW(self.old_windProc,
-                                                     hwnd, msg, wParam,
-                                                     lParam)
-            return 1
+            return (
+                1
+                if done
+                else windll.user32.CallWindowProcW(
+                    self.old_windProc, hwnd, msg, wParam, lParam
+                )
+            )
 
         # this on pushes WM_TOUCH messages onto our event stack
         def _touch_handler(self, msg, wParam, lParam):
@@ -150,8 +152,9 @@ else:
         def _mouse_handler(self, msg, wparam, lParam):
             info = windll.user32.GetMessageExtraInfo()
             # its a touch or a pen
-            if (info & PEN_OR_TOUCH_MASK) == PEN_OR_TOUCH_SIGNATURE:
-                if info & PEN_EVENT_TOUCH_MASK:
-                    return True
+            if (
+                info & PEN_OR_TOUCH_MASK
+            ) == PEN_OR_TOUCH_SIGNATURE and info & PEN_EVENT_TOUCH_MASK:
+                return True
 
     MotionEventFactory.register('wm_touch', WM_MotionEventProvider)

@@ -67,9 +67,9 @@ class FocusApp(App):
         root.add_widget(FocusLabel(text='Right', size_hint_x=0.4))
 
         for i in range(40):
-            grid1.add_widget(FocusLabel(text='l' + str(i)))
+            grid1.add_widget(FocusLabel(text=f'l{str(i)}'))
         for i in range(40):
-            grid2.add_widget(FocusLabel(text='r' + str(i)))
+            grid2.add_widget(FocusLabel(text=f'r{str(i)}'))
 
         # make elements 29, 9 un-focusable. The widgets are displayed in
         # reverse order, so 9 = 39 - 10

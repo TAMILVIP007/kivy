@@ -91,7 +91,7 @@ else:
 
             capabilities = []
             long_bit = ctypes.sizeof(ctypes.c_long) * 8
-            for i, word in enumerate(line.split(" ")):
+            for word in line.split(" "):
                 word = int(word, 16)
                 subcapabilities = [bool(word & 1 << i)
                                    for i in range(long_bit)]
@@ -151,10 +151,10 @@ else:
 
     class ProbeSysfsHardwareProbe(MotionEventProvider):
 
-        def __new__(self, device, args):
+        def __new__(cls, device, args):
             # hack to not return an instance of this provider.
             # :)
-            instance = super(ProbeSysfsHardwareProbe, self).__new__(self)
+            instance = super(ProbeSysfsHardwareProbe, cls).__new__(cls)
             instance.__init__(device, args)
 
         def __init__(self, device, args):
@@ -162,7 +162,7 @@ else:
             self.provider = 'mtdev'
             self.match = None
             self.input_path = '/sys/class/input'
-            self.select_all = True if _is_rpi else False
+            self.select_all = bool(_is_rpi)
             self.use_mouse = False
             self.use_regex = False
             self.args = []
@@ -192,7 +192,7 @@ else:
                 elif key == 'param':
                     self.args.append(value)
                 else:
-                    Logger.error('ProbeSysfs: unknown %s option' % key)
+                    Logger.error(f'ProbeSysfs: unknown {key} option')
                     continue
 
             self.probe()
@@ -216,29 +216,25 @@ else:
                           x.has_capability(ABS_MT_POSITION_X) and
                           (use_mouse or not x.is_mouse)]
             for device in inputs:
-                Logger.debug('ProbeSysfs: found device: %s at %s' % (
-                    device.name, device.device))
+                Logger.debug(f'ProbeSysfs: found device: {device.name} at {device.device}')
 
-                # must ignore ?
                 if self.match:
                     if self.use_regex:
                         if not match(self.match, device.name, IGNORECASE):
                             Logger.debug('ProbeSysfs: device not match the'
                                          ' rule in config, ignoring.')
                             continue
-                    else:
-                        if self.match not in device.name:
-                            continue
+                    elif self.match not in device.name:
+                        continue
 
-                Logger.info('ProbeSysfs: device match: %s' % device.device)
+                Logger.info(f'ProbeSysfs: device match: {device.device}')
 
                 d = device.device
                 devicename = self.device % dict(name=d.split(sep)[-1])
 
                 provider = MotionEventFactory.get(self.provider)
                 if provider is None:
-                    Logger.info('ProbeSysfs: Unable to find provider %s' %
-                                self.provider)
+                    Logger.info(f'ProbeSysfs: Unable to find provider {self.provider}')
                     Logger.info('ProbeSysfs: fallback on hidinput')
                     provider = MotionEventFactory.get('hidinput')
                 if provider is None:
@@ -246,9 +242,9 @@ else:
                                     ' to handle this device !')
                     continue
 
-                instance = provider(devicename, '%s,%s' % (
-                    device.device, ','.join(self.args)))
-                if instance:
+                if instance := provider(
+                    devicename, f"{device.device},{','.join(self.args)}"
+                ):
                     EventLoop.add_input_provider(instance)
 
     MotionEventFactory.register('probesysfs', ProbeSysfsHardwareProbe)
