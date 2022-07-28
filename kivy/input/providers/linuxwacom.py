@@ -143,7 +143,7 @@ else:
         def __init__(self, device, args):
             super(LinuxWacomMotionEventProvider, self).__init__(device, args)
             self.input_fn = None
-            self.default_ranges = dict()
+            self.default_ranges = {}
             self.mode = 'touch'
 
             # split arguments
@@ -155,7 +155,7 @@ else:
 
             # read filename
             self.input_fn = args[0]
-            Logger.info('LinuxWacom: Read event from <%s>' % self.input_fn)
+            Logger.info(f'LinuxWacom: Read event from <{self.input_fn}>')
 
             # read parameters
             for arg in args[1:]:
@@ -177,21 +177,21 @@ else:
                     continue
 
                 if key not in LinuxWacomMotionEventProvider.options:
-                    Logger.error('LinuxWacom: unknown %s option' % key)
+                    Logger.error(f'LinuxWacom: unknown {key} option')
                     continue
 
                 # ensure the value
                 try:
                     self.default_ranges[key] = int(value)
                 except ValueError:
-                    err = 'LinuxWacom: value %s invalid for %s' % (key, value)
+                    err = f'LinuxWacom: value {key} invalid for {value}'
                     Logger.error(err)
                     continue
 
                 # all good!
                 msg = 'LinuxWacom: Set custom %s to %d' % (key, int(value))
                 Logger.info(msg)
-            Logger.info('LinuxWacom: mode is <%s>' % self.mode)
+            Logger.info(f'LinuxWacom: mode is <{self.mode}>')
 
         def start(self):
             if self.input_fn is None:
@@ -263,13 +263,13 @@ else:
             try:
                 fd = open(input_fn, 'rb')
             except IOError:
-                Logger.exception('Unable to open %s' % input_fn)
+                Logger.exception(f'Unable to open {input_fn}')
                 return
 
             # get the controller name (EVIOCGNAME)
             device_name = fcntl.ioctl(fd, EVIOCGNAME + (256 << 16),
                                       " " * 256).split('\x00')[0]
-            Logger.info('LinuxWacom: using <%s>' % device_name)
+            Logger.info(f'LinuxWacom: using <{device_name}>')
 
             # get abs infos
             bit = fcntl.ioctl(fd, EVIOCGBIT + (EV_MAX << 16), ' ' * sz_l)
@@ -336,7 +336,7 @@ else:
                         if touch_id in l_points:
                             p = l_points[touch_id]
                         else:
-                            p = dict()
+                            p = {}
                             l_points[touch_id] = p
                         p['id'] = touch_id
                         if not reset_touch:

@@ -86,15 +86,19 @@ class mainclass(FloatLayout):
 
         # Handle button press/release
         def load_images(*l):
-            if l[0].text == 'load gif' or l[0].text == 'load gif\n from cache':
+            if l[0].text in ['load gif', 'load gif\n from cache']:
                 l[0].text = 'load gif\n from cache'
                 sctr = gifScatter()
-            if (l[0].text == 'load zipped\n png/s' or
-                    l[0].text == 'load zipped\n png/s from cache'):
+            if l[0].text in [
+                'load zipped\n png/s',
+                'load zipped\n png/s from cache',
+            ]:
                 l[0].text = 'load zipped\n png/s from cache'
                 sctr = zipScatter()
-            if (l[0].text == 'load zipped\n jpg/s' or
-                    l[0].text == 'load zipped\n jpg/s from cache'):
+            if l[0].text in [
+                'load zipped\n jpg/s',
+                'load zipped\n jpg/s from cache',
+            ]:
                 l[0].text = 'load zipped\n jpg/s from cache'
                 sctr = jpgScatter()
 

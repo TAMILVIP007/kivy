@@ -159,9 +159,9 @@ class MacMotionEventProvider(MotionEventProvider):
         pass
 
     @MTContactCallbackFunction
-    def _mts_callback(device, data_ptr, n_fingers, timestamp, frame):
+    def _mts_callback(self, data_ptr, n_fingers, timestamp, frame):
         global _instance
-        devid = str(device)
+        devid = str(self)
 
         # XXX create live touch, we get one case that
         # the device announced by macosx don't match the device

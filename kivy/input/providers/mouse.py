@@ -109,9 +109,8 @@ class MouseMotionEvent(MotionEvent):
             if len(args) == 4:
                 self.multitouch_sim = args[3]
                 profile.append('multitouch_sim')
-        else:
-            if not profile:
-                profile.append('pos')
+        elif not profile:
+            profile.append('pos')
         super().depack(args)
 
     #
@@ -179,7 +178,7 @@ class MouseMotionEventProvider(MotionEventProvider):
             elif arg == 'multitouch_on_demand':
                 self.multitouch_on_demand = True
             else:
-                Logger.error('Mouse: unknown parameter <%s>' % arg)
+                Logger.error(f'Mouse: unknown parameter <{arg}>')
 
     def _get_disable_hover(self):
         return self._disable_hover
@@ -265,10 +264,14 @@ class MouseMotionEventProvider(MotionEventProvider):
 
     def find_touch(self, win, x, y):
         factor = 10. / win.system_size[0]
-        for touch in self.touches.values():
-            if abs(x - touch.sx) < factor and abs(y - touch.sy) < factor:
-                return touch
-        return None
+        return next(
+            (
+                touch
+                for touch in self.touches.values()
+                if abs(x - touch.sx) < factor and abs(y - touch.sy) < factor
+            ),
+            None,
+        )
 
     def create_event_id(self):
         self.counter += 1
@@ -345,8 +348,7 @@ class MouseMotionEventProvider(MotionEventProvider):
             return
         nx, ny = win.to_normalized_pos(x, y)
         ny = 1.0 - ny
-        found_touch = self.find_touch(win, nx, ny)
-        if found_touch:
+        if found_touch := self.find_touch(win, nx, ny):
             self.current_drag = found_touch
         else:
             is_double_tap = 'shift' in modifiers
@@ -368,8 +370,7 @@ class MouseMotionEventProvider(MotionEventProvider):
             for touch in list(self.touches.values()):
                 self.remove_touch(win, touch)
             self.current_drag = None
-        touch = self.current_drag
-        if touch:
+        if touch := self.current_drag:
             not_right = button in (
                 'left',
                 'scrollup', 'scrolldown',

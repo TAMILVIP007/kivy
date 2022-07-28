@@ -59,14 +59,8 @@ class MTDMotionEvent(MotionEvent):
         super().__init__(*args, **kwargs)
 
     def depack(self, args):
-        if 'x' in args:
-            self.sx = args['x']
-        else:
-            self.sx = -1
-        if 'y' in args:
-            self.sy = args['y']
-        else:
-            self.sy = -1
+        self.sx = args['x'] if 'x' in args else -1
+        self.sy = args['y'] if 'y' in args else -1
         self.profile = ['pos']
         if 'size_w' in args and 'size_h' in args:
             self.shape = ShapeRect()
@@ -116,7 +110,7 @@ else:
             super(MTDMotionEventProvider, self).__init__(device, args)
             self._device = None
             self.input_fn = None
-            self.default_ranges = dict()
+            self.default_ranges = {}
 
             # split arguments
             args = args.split(',')
@@ -127,7 +121,7 @@ else:
 
             # read filename
             self.input_fn = args[0]
-            Logger.info('MTD: Read event from <%s>' % self.input_fn)
+            Logger.info(f'MTD: Read event from <{self.input_fn}>')
 
             # read parameters
             for arg in args[1:]:
@@ -137,22 +131,21 @@ else:
 
                 # ensure it's a key = value
                 if len(arg) != 2:
-                    err = 'MTD: Bad parameter %s: Not in key=value format' %\
-                        arg
+                    err = f'MTD: Bad parameter {arg}: Not in key=value format'
                     Logger.error(err)
                     continue
 
                 # ensure the key exist
                 key, value = arg
                 if key not in MTDMotionEventProvider.options:
-                    Logger.error('MTD: unknown %s option' % key)
+                    Logger.error(f'MTD: unknown {key} option')
                     continue
 
                 # ensure the value
                 try:
                     self.default_ranges[key] = int(value)
                 except ValueError:
-                    err = 'MTD: invalid value %s for option %s' % (key, value)
+                    err = f'MTD: invalid value {key} for option {value}'
                     Logger.error(err)
                     continue
 
@@ -162,8 +155,10 @@ else:
             if 'rotation' not in self.default_ranges:
                 self.default_ranges['rotation'] = 0
             elif self.default_ranges['rotation'] not in (0, 90, 180, 270):
-                Logger.error('HIDInput: invalid rotation value ({})'.format(
-                    self.default_ranges['rotation']))
+                Logger.error(
+                    f"HIDInput: invalid rotation value ({self.default_ranges['rotation']})"
+                )
+
                 self.default_ranges['rotation'] = 0
 
         def start(self):
@@ -293,13 +288,13 @@ else:
             while _device:
                 # if device have disconnected lets try to connect
                 if failures > 1000:
-                    Logger.info('MTD: <%s> input device disconnected' % _fn)
+                    Logger.info(f'MTD: <{_fn}> input device disconnected')
                     while not os.path.exists(_fn):
                         time.sleep(0.05)
                     # input device is back online let's recreate device
                     _device.close()
                     _device = Device(_fn)
-                    Logger.info('MTD: <%s> input device reconnected' % _fn)
+                    Logger.info(f'MTD: <{_fn}> input device reconnected')
                     failures = 0
                     continue
 
@@ -323,8 +318,8 @@ else:
                         continue
 
                     # fill the slot
-                    if not (_slot in l_points):
-                        l_points[_slot] = dict()
+                    if _slot not in l_points:
+                        l_points[_slot] = {}
                     point = l_points[_slot]
                     ev_value = data.value
                     ev_code = data.code

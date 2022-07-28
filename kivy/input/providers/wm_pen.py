@@ -48,9 +48,10 @@ else:
         def _is_pen_message(self, msg):
             info = windll.user32.GetMessageExtraInfo()
             # It's a touch or a pen
-            if (info & PEN_OR_TOUCH_MASK) == PEN_OR_TOUCH_SIGNATURE:
-                if not info & PEN_EVENT_TOUCH_MASK:
-                    return True
+            if (
+                info & PEN_OR_TOUCH_MASK
+            ) == PEN_OR_TOUCH_SIGNATURE and not info & PEN_EVENT_TOUCH_MASK:
+                return True
 
         def _pen_handler(self, msg, wParam, lParam):
             if msg not in (WM_LBUTTONDOWN, WM_MOUSEMOVE, WM_LBUTTONUP):
@@ -75,12 +76,11 @@ else:
         def _pen_wndProc(self, hwnd, msg, wParam, lParam):
             if msg == WM_TABLET_QUERYSYSTEMGESTURE:
                 return QUERYSYSTEMGESTURE_WNDPROC
-            if self._is_pen_message(msg):
-                self._pen_handler(msg, wParam, lParam)
-                return 1
-            else:
+            if not self._is_pen_message(msg):
                 return windll.user32.CallWindowProcW(self.old_windProc,
                                                      hwnd, msg, wParam, lParam)
+            self._pen_handler(msg, wParam, lParam)
+            return 1
 
         def start(self):
             self.uid = 0
